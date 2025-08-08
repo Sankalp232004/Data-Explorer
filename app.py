@@ -1,20 +1,15 @@
-# app.py
-
 import os
 import pandas as pd
 import plotly.express as px
 from flask import Flask, render_template, request, redirect, url_for
 
-# Initialize Flask app and configure uploads
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
 @app.route('/', methods=['GET', 'POST'])
 def upload_page():
-    """Handles the initial file upload."""
     if request.method == 'POST':
         if 'file' not in request.files:
             return "No file part. Please go back and select a file."
@@ -30,7 +25,6 @@ def upload_page():
         else:
             return "Invalid file type. Please upload a .csv file."
 
-    # For a GET request, just show the upload page
     return '''
     <!doctype html>
     <title>Upload CSV</title>
@@ -54,7 +48,6 @@ def upload_page():
 
 @app.route('/explorer/<filename>', methods=['GET', 'POST'])
 def explorer_page(filename):
-    """Handles plot generation and displays the data."""
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     try:
         df = pd.read_csv(filepath)
@@ -88,13 +81,12 @@ def explorer_page(filename):
                 fig = px.bar(plot_df, x=x_axis, y=y_axis, title=f'{y_axis} by {x_axis}')
             else:
                 fig = px.line(plot_df, x=x_axis, y=y_axis, title=f'{y_axis} over {x_axis}')
-
+            
             plot_div = fig.to_html(full_html=False)
 
     table_html = df.head(10).to_html(classes='data-table', border=0)
-
+    
     return render_template('explorer.html', columns=columns, plot_div=plot_div, table_html=table_html, filename=filename)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
